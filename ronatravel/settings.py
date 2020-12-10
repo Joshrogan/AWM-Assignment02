@@ -96,7 +96,7 @@ if socket.gethostname() == "josh-tuxedo":
     DATABASES["default"]["HOST"] = "localhost"
     DATABASES["default"]["PORT"] = 25432
 else:
-    DATABASES["default"]["HOST"] = "irelanddb"
+    DATABASES["default"]["HOST"] = "irelanddb2"
     DATABASES["default"]["PORT"] = 5432
 
 

@@ -31,7 +31,7 @@ class LocalArea(models.Model):
     p14_100k_t = models.CharField(max_length=17)
     ire_incp14 = models.IntegerField()
     eventdate = models.DateField()
-    geom = models.MultiPolygonField(srid=3857)
+    geom = models.MultiPolygonField(srid=4326)
 
     def __str__(self):
         return self.english
