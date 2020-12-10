@@ -48,24 +48,30 @@ L.control.layers(baseLayers).addTo(map);
 
 function geojsonStyle(feature){
 	return {
-		fillColor: 'red',
+		fillColor: getColor(feature.properties.p14_100k),
 		weight: 2,
-		opacity: 1, 
+		opacity: 0.1, 
 		color: 'white',
 		fillOpacity: 0.7
 	}
 }
 
-function getColor(province) {
-	if (province === 'Leinster') {
-		return 'blue'
-	} else if (province === 'Munster') {
+function getColor(cases) {
+	if (cases >  200) {
+		return 'DarkRed'
+	} else if (cases > 100) {
 		return 'red'
-	} else if (province === 'Ulster') {
-		return 'white'
-	} else {
-		return 'green'
-	}
+	} else if (cases > 50) {
+		return 'orange'
+	} else if (cases > 25){
+		return 'yellow'
+	} else if (cases > 10) {
+        return 'PapayaWhip'
+    } else  if (cases > 0){
+        return 'blue'
+    } else {
+        return 'white'
+    }
 }
 
 $.getJSON("{% url 'local_area' %}", function(data) {
