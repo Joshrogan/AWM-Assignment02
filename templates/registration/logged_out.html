@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 style="text-align: center;">Logged Out!</h1>
+<div class="container">
+<a class="btn btn-primary btn-lg btn-block" href="{% url 'login' %}" role="button">Log Back In</a>
+</div>
+{% endblock %}
