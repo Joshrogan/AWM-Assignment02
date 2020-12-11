@@ -2,3 +2,24 @@
 https://opendata-geohive.hub.arcgis.com/datasets/27d401c9ae084097bb1f3a69b69462a1_0.zip?outSR=%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D
 
 https://opendata-geohive.hub.arcgis.com/datasets/27d401c9ae084097bb1f3a69b69462a1_0 landing page
+
+
+<QuerySet [<Post: 54.88231303701802,-7.646484375000001,admin,donegal, catch covid,0>, <Post: 53.31900798514405,-6.734619140625,admin,testing text area,3>, <Post: 51.88528007229479,-8.437500000000002,admin,Cork,Cork,Cork,Cork,4>]>
+
+let data = "<QuerySet [<Post: 54.88231303701802,-7.646484375000001,admin,donegal, catch covid,0>, <Post: 53.31900798514405,-6.734619140625,admin,testing text area,3>, <Post: 51.88528007229479,-8.437500000000002,admin,Cork,Cork,Cork,Cork,4>]>"
+
+let test = data.split('<Post:')
+
+newTest = test.shift()
+
+
+mapTest = test.map(loc => {
+ return loc.split(',')}
+)
+
+finalHurdle = mapTest[0]
+
+
+mapNew = mapTest.map(arr => {
+... return {"lat": arr[0], "long": arr[1], "name": arr[2}})
+return {"lat": arr[0], "long": arr[1], "name": arr[2}})

@@ -27,7 +27,7 @@
 				  <li>{{ post.rating }}</li>
 				  <input class="btn btn-warning" type="submit" value="Delete" /> 
 				</form>  -->
-
+					<p>{{post.profile.id}}</p>
 
 					<li class="list-group-item d-flex justify-content-between align-items-center list-group-item-action" onclick="focusOn({{post.id}})">
 						{{post.comment}}
@@ -147,7 +147,9 @@ let submitThis = () => {
 
 form.addEventListener('submit', submitThis);
 const mydata = {{json|safe}}
-console.log(mydata)
+mydata.forEach(data => {
+	console.log(data)
+})
 let userID = {{user.id}}
 console.log('userID' + userID)
 let mapThis = mydata.map(test => {
@@ -175,12 +177,34 @@ let test = null;
 
 console.log('mapthis test' + mapThis[0].key)
 
+let postTest = `{{posts|safe}}`
+
+postTest = postTest.split('<Post:')
+
+postTest.shift()
+
+mapTest = postTest.map(loc => {
+ return loc.split(',')}
+)
+
+nameMap = mapTest.map(arr => {
+return {"lat": arr[0], "long": arr[1], "name": arr[2]}})
+
+console.log(nameMap)
+
+
 for (let i = 0; i < mapThis.length; i++) {
+	let owner = null;
 	test = mapThis[i].key
-	let owner = mapThis[i].profile
+	for (let j = 0; j < nameMap.length; j++) {
+		if(mapThis[i].lat == nameMap[j].lat.trim()) {
+			owner = nameMap[j].name;
+		}
+	}
+	let comment = mapThis[i].comment
 	let popup = null;
-	if (owner == userID) {
-		popup = L.popup().setContent('<button class="trigger" id=' + test + ' > ' + test + ' </a>');
+	if (mapThis[i].profile === userID) {
+		popup = L.popup().setContent('<p>owner:' + owner + '</p><p>' + comment +'</p><button class="trigger" id=' + test + '> Delete </a>');
 
 	} else {
 		popup = L.popup().setContent('<div id=' + test + ' > you will never get this </a>');
@@ -192,6 +216,7 @@ for (let i = 0; i < mapThis.length; i++) {
 function groupClick(event) {
 	console.log("Clicked on a maerker" + event.layer.test);
 }
+
 
 console.log(mapThis)
 

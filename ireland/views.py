@@ -5,17 +5,25 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.gis.geos import Point
 from django.http import JsonResponse
+from django.contrib.auth import get_user_model
 
 
+import logging
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 def index(request):
+    User = get_user_model()
+    users = User.objects.all()
     return render(request, 'index.html')
 
 def profile(request):
     post_data = Post.objects.all()
     json_data = serialize("json",post_data)
-    
+    logger.error(json_data)
+
     return render(request, 'profile.html', {'posts': post_data, "json": json_data})
 
 
