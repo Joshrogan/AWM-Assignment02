@@ -20,4 +20,5 @@ urlpatterns = [
     path('', include('ireland.urls')),
     path('', include('pwa.urls')),
     path('admin/', admin.site.urls),
+    path('accounts/', include('django.contrib.auth.urls')),
 ]

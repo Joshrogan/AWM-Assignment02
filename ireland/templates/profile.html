@@ -1,22 +1,37 @@
 {% extends "base.html" %}
 {% block content %}
 
+<div class="container">
+	<div class="row">
+		<div class="col-lg-8 col-md-12">
+			<div id="map"></div>
+		</div>
+		<div class="col-lg-4 col-md-12">
+			<form id = "form">
+			<div class="form-group">
+				<label for="comment">Comment:</label>
+				<textarea class="form-control" rows="5" id="comment"></textarea>
+				<label for="rating">Rating 0-5: </label>
+				<input class="form-control" type="number" name="rating" id="rating" min="0" max="5">
+				<input class="btn btn-primary btn-block mt-3" type="submit" value="Submit">
+			  </div>
+			</form>
+			<h2>Your Favourite Spots</h2>
+			<ul>
+				{% for post in posts %}
+				<form action="{% url 'delete_post' post.pk %}" method="POST"> 
+					{% csrf_token %}
+					<li><a href="#" onclick="focusOn({{post.id}})">Paris</a></li>
+				  <li>{{ post.id }}</li>
+				  <input type="submit" value="Yes" /> 
+				</form> 
+				{% endfor %}
+			  </ul>
+		</div>
+	  </div>
+</div>
 
-<div id="map"></div>
-<form id = "form">
-	<input type="text" name="comment" id="comment">
-	<input type="number" name="rating" id="rating">
-	<input type="submit" value="submit">
-</form>
-<ul>
-	{% for post in posts %}
-	<form action="{% url 'delete_post' post.pk %}" method="POST"> 
-		{% csrf_token %}
-	  <li>{{ post.location }}</li>
-	  <input type="submit" value="Yes" /> 
-	</form> 
-	{% endfor %}
-  </ul>
+
 
 <script>
  let map = L.map("map").setView([53.2734, -7.77832031], 7);
@@ -111,7 +126,7 @@ let submitThis = () => {
         }).fail(function (xhr,staus, error) {
             console.log(error);
         }).always(function () {
-            console.log("find_loc_ed finished");
+            console.log("reload");
 			location.reload();  
         });
 }
@@ -178,16 +193,26 @@ $('#map').on('click', '.trigger', function(event) {
             }
         }).done(function (data, status, xhr) {
             console.log(data["message"])
-            console.log("success")
+            console.log(" delete success")
 			location.reload();  
         }).fail(function (xhr,staus, error) {
             console.log(error);
         }).always(function () {
-            console.log("find_loc_ed finished");
+            console.log("delete finished");
         });
 });
 
-// 		L.marker([coord.lat, coord.long]).addTo(map).bindPopup(container)
+function focusOn(id) {
+
+	var match = featureGroup.eachLayer(function(layer) {
+		if (layer.test === id) {
+			layer.openPopup()
+		}
+		console.log(layer.test)
+})
+
+  
+}
 
 </script>
    

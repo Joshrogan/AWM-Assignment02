@@ -12,11 +12,11 @@ from django.http import JsonResponse
 def index(request):
     return render(request, 'index.html')
 
-def map(request):
+def profile(request):
     post_data = Post.objects.all()
     json_data = serialize("json",post_data)
     
-    return render(request, 'map.html', {'posts': post_data, "json": json_data})
+    return render(request, 'profile.html', {'posts': post_data, "json": json_data})
 
 
 def local_area(request):
@@ -55,3 +55,14 @@ def delete_post(request, pk):
 
   
     return HttpResponseRedirect('/')
+
+def signup(request):
+    form = UserCreationForm(request.POST)
+    if form.is_valid():
+        form.save()
+        username = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password1')
+        user = authenticate(username=username, password=password)
+        login(request, user)
+        return redirect('map')
+    return render(request, 'signup.html', {'form': form})
