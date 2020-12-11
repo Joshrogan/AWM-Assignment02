@@ -16,17 +16,31 @@
 				<input class="btn btn-primary btn-block mt-3" type="submit" value="Submit">
 			  </div>
 			</form>
-			<h2>Your Favourite Spots</h2>
-			<ul>
+			<h2 class="text-center">Your Favourite Spots</h2>
+			<ul class="list-group">
 				{% for post in posts %}
-				<form action="{% url 'delete_post' post.pk %}" method="POST"> 
+				<!-- <form action="{% url 'delete_post' post.pk %}" method="POST"> 
 					{% csrf_token %}
-					<li><a href="#" onclick="focusOn({{post.id}})">Paris</a></li>
-				  <li>{{ post.id }}</li>
-				  <input type="submit" value="Yes" /> 
-				</form> 
+					<script>
+				</script>
+					<li><a href="#" onclick="focusOn({{post.id}})">{{post.comment}}</a></li>
+				  <li>{{ post.rating }}</li>
+				  <input class="btn btn-warning" type="submit" value="Delete" /> 
+				</form>  -->
+
+
+					<li class="list-group-item d-flex justify-content-between align-items-center list-group-item-action" onclick="focusOn({{post.id}})">
+						{{post.comment}}
+						<span class="badge badge-primary badge-pill">{{ post.rating }}</span>
+					  </li>
 				{% endfor %}
 			  </ul>
+			  <h2 class="text-center">How To Use:</h2>
+			  <ol>
+				  <li>Click where you have been on the map</li>
+				  <li>Enter a comment and rate it 0 through 5</li>
+				  <li>Click submit to add it to your favourite spots and share with others</li>
+			  </ol>
 		</div>
 	  </div>
 </div>
@@ -203,17 +217,12 @@ $('#map').on('click', '.trigger', function(event) {
 });
 
 function focusOn(id) {
-
 	var match = featureGroup.eachLayer(function(layer) {
 		if (layer.test === id) {
 			layer.openPopup()
 		}
-		console.log(layer.test)
 })
-
-  
 }
-
 </script>
    
 {% endblock %}
