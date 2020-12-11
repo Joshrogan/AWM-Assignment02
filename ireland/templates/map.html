@@ -2,75 +2,57 @@
 {% block content %}
 
 
-<div sytle="width: 100%; height: 95vh;" id="map"></div>
+<div id="map"></div>
+<form id = "form">
+	<input type="text" name="comment" id="comment">
+	<input type="number" name="rating" id="rating">
+	<input type="submit" value="submit">
+</form>
+<ul>
+	{% for post in posts %}
+	<form action="{% url 'delete_post' post.pk %}" method="POST"> 
+		{% csrf_token %}
+	  <li>{{ post.location }}</li>
+	  <input type="submit" value="Yes" /> 
+	</form> 
+	{% endfor %}
+  </ul>
 
 <script>
- var map = L.map("map").setView([53.2734, -7.77832031], 7);
+ let map = L.map("map").setView([53.2734, -7.77832031], 7);
 
-var osm = L.tileLayer(
+let osm = L.tileLayer(
   "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
   {
 	attribution:
 	  "&copy; <a href='https://openstreetmap.org/copyright'> Openstreet map</a> contributors",
   }
 );
-
-var darkLayer = L.tileLayer(
-  "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
-  {
-	maxZoom: 20,
-	attribution:
-	  '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
-  }
-);
-
-var watercolor = L.tileLayer(
-  "https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}",
-  {
-	attribution:
-	  'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-	subdomains: "abcd",
-	minZoom: 1,
-	maxZoom: 16,
-	ext: "jpg",
-  }
-);
-
-var baseLayers = {
-  osm: osm,
-  "dark map": darkLayer,
-  "water color map": watercolor,
-};
-
 osm.addTo(map);
-
-L.control.layers(baseLayers).addTo(map);
 
 function geojsonStyle(feature){
 	return {
 		fillColor: getColor(feature.properties.p14_100k),
-		weight: 2,
-		opacity: 0.1, 
+		weight: .1,
+		opacity: 1, 
 		color: 'white',
-		fillOpacity: 0.7
+		fillOpacity: 0.3
 	}
 }
 
 function getColor(cases) {
 	if (cases >  200) {
-		return 'DarkRed'
+		return 'black'
 	} else if (cases > 100) {
-		return 'red'
+		return 'darkred'
 	} else if (cases > 50) {
-		return 'orange'
+		return 'red'
 	} else if (cases > 25){
-		return 'yellow'
+		return 'orange'
 	} else if (cases > 10) {
-        return 'PapayaWhip'
-    } else  if (cases > 0){
-        return 'blue'
-    } else {
-        return 'white'
+        return 'yellow'
+    }  else {
+        return 'papayawhip'
     }
 }
 
@@ -80,26 +62,132 @@ $.getJSON("{% url 'local_area' %}", function(data) {
 			style: geojsonStyle,
 	}).addTo(map)
 })
-// let coords = "0.0,0.0";
-// let curMarker = null;
 
-// function onMapClick(e) {
+let coords = "0.0,0.0";
+let curMarker = null;
 
-// 		if (curMarker != null) {
-// 			map.removeLayer(curMarker)
-// 		}
-//         coords = e.latlng;
-//         console.log(coords)
-//         let lat, lng = [coords.lat ,coords.lng];
-//         console.log(coords.lat)
-//         console.log(coords.lng)
-//         let test = coords.lat + ',' + coords.lng;
-//         console.log(test)
-// 		curMarker = L.marker([coords.lat, coords.lng]).addTo(map)
-//         coords=test
-// }
+function onMapClick(e) {
 
-// map.on('click', onMapClick);
+		if (curMarker != null) {
+			map.removeLayer(curMarker)
+		}
+        coords = e.latlng;
+        console.log(coords)
+        let lat, lng = [coords.lat ,coords.lng];
+        console.log(coords.lat)
+        console.log(coords.lng)
+        let test = coords.lat + ',' + coords.lng;
+        console.log(test)
+		curMarker = L.marker([coords.lat, coords.lng]).addTo(map)
+        coords=test
+}
+
+map.on('click', onMapClick);
+
+const form = document.getElementById('form');
+
+let submitThis = () => {
+    console.log({
+        point: coords,
+        comment: form.elements.comment.value,
+        rating: form.elements.rating.value
+    })
+
+	$.ajax({
+            type: "POST",
+            headers: {
+            },
+            url: "/create_post/",
+            data: {
+                point: coords,
+        		comment: form.elements.comment.value,
+        		rating: form.elements.rating.value,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            }
+        }).done(function (data, status, xhr) {
+            console.log(data["message"])
+            console.log("success")
+			location.reload();  
+        }).fail(function (xhr,staus, error) {
+            console.log(error);
+        }).always(function () {
+            console.log("find_loc_ed finished");
+			location.reload();  
+        });
+}
+
+form.addEventListener('submit', submitThis);
+const mydata = {{json|safe}}
+console.log(mydata)
+let userID = {{user.id}}
+console.log('userID' + userID)
+let mapThis = mydata.map(test => {
+	 let coord = Array(test["fields"].location.split('SRID=4326;POINT (')[1]).pop().split(' ')
+	return {
+	key: test["pk"],
+	lat: coord[0],
+	long: coord[1].slice(0, -1),
+	rating: test["fields"].rating,
+	comment: test["fields"].comment,
+	profile: test["fields"].profile
+	}
+})
+
+let container = document.createElement('div');
+let button = document.createElement('button')
+button.classList.add("trigger");
+button.innerHTML ="Delete me"
+
+container.appendChild(button)
+
+let featureGroup = L.featureGroup().addTo(map).on("click", groupClick);
+let marker = null;
+let test = null;
+
+console.log('mapthis test' + mapThis[0].key)
+
+for (let i = 0; i < mapThis.length; i++) {
+	test = mapThis[i].key
+	let owner = mapThis[i].profile
+	let popup = null;
+	if (owner == userID) {
+		popup = L.popup().setContent('<button class="trigger" id=' + test + ' > ' + test + ' </a>');
+
+	} else {
+		popup = L.popup().setContent('<div id=' + test + ' > you will never get this </a>');
+	}
+	marker = L.marker([mapThis[i].lat, mapThis[i].long]).addTo(featureGroup).bindPopup(popup);
+		marker.test = test
+}
+
+function groupClick(event) {
+	console.log("Clicked on a maerker" + event.layer.test);
+}
+
+console.log(mapThis)
+
+$('#map').on('click', '.trigger', function(event) {
+    console.log(this.id);
+		$.ajax({
+            type: "POST",
+            headers: {
+            },
+            url: "/delete/" + this.id + '/',
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            }
+        }).done(function (data, status, xhr) {
+            console.log(data["message"])
+            console.log("success")
+			location.reload();  
+        }).fail(function (xhr,staus, error) {
+            console.log(error);
+        }).always(function () {
+            console.log("find_loc_ed finished");
+        });
+});
+
+// 		L.marker([coord.lat, coord.long]).addTo(map).bindPopup(container)
 
 </script>
    
