@@ -152,7 +152,12 @@ dmypy.json
 
 bin/
 
-static/
+static/admin/
+static/css/
+static/fonts/
+static/gis
+static/images/
+static/leaflet/
 
 ## config file
 python_config.py

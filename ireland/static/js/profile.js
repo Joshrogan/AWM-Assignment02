@@ -1,48 +1,58 @@
-{% extends "base.html" %}
-{% load static %}
-{% block content %}
+let map = L.map("map").setView([53.2734, -7.77832031], 7);
 
-<div class="container">
-	<div class="row">
-		<div class="col-lg-8 col-md-12">
-			<div id="map"></div>
-		</div>
-		<div class="col-lg-4 col-md-12">
-			<form id = "form">
-			<div class="form-group">
-				<label for="comment">Comment:</label>
-				<textarea class="form-control" rows="5" id="comment"></textarea>
-				<label for="rating">Rating 0-5: </label>
-				<input class="form-control" type="number" name="rating" id="rating" min="0" max="5">
-				<input class="btn btn-primary btn-block mt-3" type="submit" value="Submit">
-			  </div>
-			</form>
-			<h2 class="text-center">Your Favourite Spots</h2>
-			<ul class="list-group">
-				{% for post in posts %}
-					{% if post.profile.id == user.id%}
-					<li class="list-group-item d-flex justify-content-between align-items-center list-group-item-action" onclick="focusOn({{post.id}})">
-						{{post.comment}}
-						<span class="badge badge-primary badge-pill">{{ post.rating }}</span>
-					  </li>
-					  {% endif %}
-				{% endfor %}
-			  </ul>
-			  <h2 class="text-center">How To Use:</h2>
-			  <ol>
-				  <li>Click where you have been on the map</li>
-				  <li>Enter a comment and rate it 0 through 5</li>
-				  <li>Click submit to add it to your favourite spots and share with others</li>
-			  </ol>
-		</div>
-	  </div>
-</div>
+let osm = L.tileLayer(
+  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+  {
+	attribution:
+	  "&copy; <a href='https://openstreetmap.org/copyright'> Openstreet map</a> contributors",
+  }
+);
+osm.addTo(map);
 
-<script type="application/javascript" src="{% static "js/mapSetup.js" %}"></script>
+function geojsonStyle(feature){
+	return {
+		fillColor: getColor(feature.properties.p14_100k),
+		weight: .1,
+		opacity: 1, 
+		color: 'white',
+		fillOpacity: 0.6
+	}
+}
 
-<!--This script tag makes heavy use of django template stuff so can't be shipped out to a seperate file-->
-<script>
+function getColor(d) {
+    return d > 400 ? '#800026' :
+           d > 300  ? '#BD0026' :
+           d > 200  ? '#E31A1C' :
+           d > 100  ? '#FC4E2A' :
+           d > 50   ? '#FD8D3C' :
+           d > 25   ? '#FEB24C' :
+           d > 10   ? '#FED976' :
+                      '#FFEDA0';
+}
+
+var legend = L.control({position: 'bottomright'});
+
+legend.onAdd = function (map) {
+
+    var div = L.DomUtil.create('div', 'info legend'),
+        grades = [0, 10, 25, 50, 100, 200, 300, 400],
+        labels = [];
+
+	div.innerHTML = '<strong>Cases per 100k</strong><br>'
+    // loop through our density intervals and generate a label with a colored square for each interval
+    for (var i = 0; i < grades.length; i++) {
+        div.innerHTML +=
+            '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+            grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+    }
+
+    return div;
+};
+
+legend.addTo(map);
+
 $.getJSON("{% url 'local_area' %}", function(data) {
+	console.log(data);
 	L.geoJSON(data, {
 			style: geojsonStyle,
 	}).addTo(map)
@@ -52,12 +62,17 @@ let coords = "0.0,0.0";
 let curMarker = null;
 
 function onMapClick(e) {
+
 		if (curMarker != null) {
 			map.removeLayer(curMarker)
 		}
         coords = e.latlng;
+        console.log(coords)
         let lat, lng = [coords.lat ,coords.lng];
+        console.log(coords.lat)
+        console.log(coords.lng)
         let test = coords.lat + ',' + coords.lng;
+        console.log(test)
 		curMarker = L.marker([coords.lat, coords.lng]).addTo(map)
         coords=test
 }
@@ -67,6 +82,12 @@ map.on('click', onMapClick);
 const form = document.getElementById('form');
 
 let submitThis = () => {
+    console.log({
+        point: coords,
+        comment: form.elements.comment.value,
+        rating: form.elements.rating.value
+    })
+
 	$.ajax({
             type: "POST",
             headers: {
@@ -92,9 +113,12 @@ let submitThis = () => {
 
 form.addEventListener('submit', submitThis);
 const mydata = {{json|safe}}
-
+mydata.forEach(data => {
+	console.log(data)
+})
 let userID = {{user.id}}
-let postsArray = mydata.map(test => {
+console.log('userID' + userID)
+let mapThis = mydata.map(test => {
 	 let coord = Array(test["fields"].location.split('SRID=4326;POINT (')[1]).pop().split(' ')
 	return {
 	key: test["pk"],
@@ -117,8 +141,8 @@ let featureGroup = L.featureGroup().addTo(map).on("click", groupClick);
 let marker = null;
 let test = null;
 
-// This is a work around to map between post owner id and name in js specifically for leaflet
-// if it was just in plain html in a django template i could just do post.profile OR post.profile.id
+console.log('mapthis test' + mapThis[0].key)
+
 let postTest = `{{posts|safe}}`
 
 postTest = postTest.split('<Post:')
@@ -132,35 +156,38 @@ mapTest = postTest.map(loc => {
 nameMap = mapTest.map(arr => {
 return {"lat": arr[0], "long": arr[1], "name": arr[2]}})
 
+console.log(nameMap)
 
-// This big loop makes a marker for each post
-for (let i = 0; i < postsArray.length; i++) {
+
+for (let i = 0; i < mapThis.length; i++) {
 	let owner = null;
-	test = postsArray[i].key
+	test = mapThis[i].key
 	for (let j = 0; j < nameMap.length; j++) {
-		if(postsArray[i].lat == nameMap[j].lat.trim()) {
+		if(mapThis[i].lat == nameMap[j].lat.trim()) {
 			owner = nameMap[j].name;
 		}
 	}
-	let comment = postsArray[i].comment
+	let comment = mapThis[i].comment
 	let popup = null;
-	if (postsArray[i].profile === userID) {
+	if (mapThis[i].profile === userID) {
 		popup = L.popup().setContent('<p>owner:' + owner + '</p><p>' + comment +'</p><button class="trigger btn-xs btn-danger" id=' + test + '> Delete </a>');
 
 	} else {
 		// popup = L.popup().setContent('<div id=' + test + ' > you will never get this </a>');
 	}
-	marker = L.marker([postsArray[i].lat, postsArray[i].long]).addTo(featureGroup).bindPopup(popup);
+	marker = L.marker([mapThis[i].lat, mapThis[i].long]).addTo(featureGroup).bindPopup(popup);
 		marker.test = test
 }
 
 function groupClick(event) {
-	console.log("Clicked on a marker" + event.layer.test);
+	console.log("Clicked on a maerker" + event.layer.test);
 }
 
 
+console.log(mapThis)
 
 $('#map').on('click', '.trigger', function(event) {
+    console.log(this.id);
 		$.ajax({
             type: "POST",
             headers: {
@@ -186,6 +213,3 @@ function focusOn(id) {
 			layer.openPopup()
 		}
 })}
-</script>
-   
-{% endblock %}
