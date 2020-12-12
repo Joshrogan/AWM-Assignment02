@@ -1,18 +1,22 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from .models import LocalArea, Profile, Post
 from django.core.serializers import serialize
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.gis.geos import Point
 from django.http import JsonResponse
-from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login, authenticate
+
 
 # Create your views here.
 def index(request):
-    User = get_user_model()
-    users = User.objects.all()
-    return render(request, 'index.html')
+    post_data = Post.objects.all()
+    json_data = serialize("json",post_data)
 
+    return render(request, 'index.html', {'posts': post_data, "json": json_data})
+
+@login_required
 def profile(request):
     post_data = Post.objects.all()
     json_data = serialize("json",post_data)
@@ -65,5 +69,5 @@ def signup(request):
         password = form.cleaned_data.get('password1')
         user = authenticate(username=username, password=password)
         login(request, user)
-        return redirect('map')
+        return redirect('profile')
     return render(request, 'signup.html', {'form': form})

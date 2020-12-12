@@ -58,7 +58,7 @@ function onMapClick(e) {
         coords = e.latlng;
         let lat, lng = [coords.lat ,coords.lng];
         let test = coords.lat + ',' + coords.lng;
-		curMarker = L.marker([coords.lat, coords.lng]).addTo(map)
+		curMarker = L.marker([coords.lat, coords.lng], {icon: greenIcon}).addTo(map)
         coords=test
 }
 
@@ -132,26 +132,23 @@ mapTest = postTest.map(loc => {
 nameMap = mapTest.map(arr => {
 return {"lat": arr[0], "long": arr[1], "name": arr[2]}})
 
-
 // This big loop makes a marker for each post
 for (let i = 0; i < postsArray.length; i++) {
 	let owner = null;
 	test = postsArray[i].key
 	for (let j = 0; j < nameMap.length; j++) {
-		if(postsArray[i].lat == nameMap[j].lat.trim()) {
+
+		if(postsArray[i].long == nameMap[j].long) {
 			owner = nameMap[j].name;
 		}
 	}
 	let comment = postsArray[i].comment
 	let popup = null;
 	if (postsArray[i].profile === userID) {
-		popup = L.popup().setContent('<p>owner:' + owner + '</p><p>' + comment +'</p><button class="trigger btn-xs btn-danger" id=' + test + '> Delete </a>');
-
-	} else {
-		// popup = L.popup().setContent('<div id=' + test + ' > you will never get this </a>');
-	}
-	marker = L.marker([postsArray[i].lat, postsArray[i].long]).addTo(featureGroup).bindPopup(popup);
+		popup = L.popup().setContent('<p>User:' + owner + '</p><p>' + comment +'</p><button class="trigger btn-xs btn-danger" id=' + test + '> Delete </a>');
+		marker = L.marker([postsArray[i].lat, postsArray[i].long], {icon: violetIcon}).addTo(featureGroup).bindPopup(popup);
 		marker.test = test
+	} 
 }
 
 function groupClick(event) {

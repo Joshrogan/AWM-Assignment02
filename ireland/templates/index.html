@@ -2,12 +2,107 @@
 {% load static %}
 {% block content %}
 
-<h2 style="margin-top: 10px; text-align: center">Welcome to Cat Finder</h2>
+<h2 style="margin-top: 10px; text-align: center"></h2>
 <div class="container">
-
+    <h2 style="margin-top: 10px; text-align: center">CoronaTravel: highlighting the best local spots during a global pandemic</h2>
     {% if user.is_authenticated %}
-    <h2 style="text-align: center;">Hi {{ user.get_username }} </h2>
+    <h3 style="text-align: center;">Add your own by going to the profile tab </h2>
+    {% else %}
+    <h2 style="text-align: center;">Sign up to add your own! </h2>
     {% endif %}
+    <div id="map"></div>
 </div>
 </div>
+<script type="application/javascript" src="{% static "js/mapSetup.js" %}"></script>
+<script>
+    $.getJSON("{% url 'local_area' %}", function(data) {
+        L.geoJSON(data, {
+                style: geojsonStyle,
+        }).addTo(map)
+    })
+    
+    const mydata = {{json|safe}}
+    
+   
+let userID = "{{user.id}}";
+
+
+    if (userID !== "None") {
+        userID = Number(userID)
+    }
+    let postsArray = mydata.map(test => {
+         let coord = Array(test["fields"].location.split('SRID=4326;POINT (')[1]).pop().split(' ')
+        return {
+        key: test["pk"],
+        lat: coord[0],
+        long: coord[1].slice(0, -1),
+        rating: test["fields"].rating,
+        comment: test["fields"].comment,
+        profile: test["fields"].profile
+        }
+    })
+    
+    let container = document.createElement('div');
+    let button = document.createElement('button')
+    button.classList.add("trigger");
+    button.innerHTML ="Delete me"
+    
+    container.appendChild(button)
+    
+    let featureGroup = L.featureGroup().addTo(map).on("click", groupClick);
+    let marker = null;
+    let test = null;
+    
+    // This is a work around to map between post owner id and name in js specifically for leaflet
+    // if it was just in plain html in a django template i could just do post.profile OR post.profile.id
+    let postTest = `{{posts|safe}}`
+    
+    postTest = postTest.split('<Post:')
+    
+    postTest.shift()
+    
+    mapTest = postTest.map(loc => {
+     return loc.split(',')}
+    )
+    
+    nameMap = mapTest.map(arr => {
+    return {"lat": arr[0], "long": arr[1], "name": arr[2]}})
+    
+    
+    // This big loop makes a marker for each post
+    for (let i = 0; i < postsArray.length; i++) {
+        let owner = null;
+        test = postsArray[i].key
+        for (let j = 0; j < nameMap.length; j++) {
+            if(postsArray[i].long == nameMap[j].long) {
+                owner = nameMap[j].name;
+            }
+        }
+
+        let comment = postsArray[i].comment
+        let popup = null;
+        let rating = postsArray[i].rating
+        if (postsArray[i].profile === userID && userID) {
+            popup = L.popup().setContent('<p>user:' + owner + '</p><p>' + comment + '</p><p>' + rating + '/5</p>');
+            marker = L.marker([postsArray[i].lat, postsArray[i].long], {icon: violetIcon}).addTo(featureGroup).bindPopup(popup);
+    
+        } else {
+            popup = L.popup().setContent('<p>user:' + owner + '</p><p>' + comment + '</p><p>' + rating + '/5</p>');
+            marker = L.marker([postsArray[i].lat, postsArray[i].long],  {icon: blueIcon}).addTo(featureGroup).bindPopup(popup);
+        }
+        
+            marker.test = test
+    }
+    
+    function groupClick(event) {
+        console.log("Clicked on a marker" + event.layer.test);
+    }
+    
+    function focusOn(id) {
+        var match = featureGroup.eachLayer(function(layer) {
+            if (layer.test === id) {
+                layer.openPopup()
+            }
+    })}
+    </script>
 {% endblock %}
