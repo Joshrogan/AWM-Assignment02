@@ -184,7 +184,9 @@ localarea_mapping = {
 
 localarea_shp = Path(__file__).resolve().parent / 'covidData' / 'Covid19_LEACases_Mapped.shp'
 
-
+def initDB(verbose=True):
+    lm = LayerMapping(LocalArea, str(localarea_shp), localarea_mapping, transform=False, unique='fid')
+    lm.save(strict=True, verbose=verbose)
 
 def run(verbose=True):
     lm = UpdateLayerMapping(LocalArea, str(localarea_shp), localarea_mapping, transform=False, unique='fid')
