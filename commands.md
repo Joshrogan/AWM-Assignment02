@@ -1,4 +1,4 @@
-#db one
+#some of the docker commands i used
 docker create --name irelanddb2 --network awm2021 --network-alias irelanddb2 -t -p 25432:5432 -v irelanddb2_data:/var/lib/postgresql kartoza/postgis
 
 
@@ -27,4 +27,9 @@ docker create --name irelanddb2 --network awm2021 --network-alias irelanddb2 -t 
 
 docker create --name ronatravel --network awm2021 --network-alias my_ronatravel -t -v html_data:/usr/src/app/static joshrogan/ronatravel:latest ronatravel
 
-docker create --name wmap_pgadmin4 --network awm2021 --network-alias wmap-pgadmin4 -t -v wmap_pgadmin_data:/var/lib/pgadmin -e 'PGADMIN_DEFAULT_EMAIL=mark.foley@tudublin.ie' -e 'PGADMIN_DEFAULT_PASSWORD=mypassword' dpage/pgadmin4
+
+docker container commit ronatravel joshrogan/ronatravel:latest
+docker push joshrogan/ronatravel:latest
+
+
+docker exec -it ronatravel /bin/bash
