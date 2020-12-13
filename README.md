@@ -14,10 +14,8 @@ let users know what locations are safe to visit if they have low # of cases
 * Middle tier(s): Django
 * Front-end: Bootstrap 4
 * Mapping tech: Leaflet JS with OpenStreetMap
-* Deployment architecture sketch by Lecturer:
-![deploy architecture](docker_net.png)
 * Deployment: Docker, Nginx, Digital Ocean
-* PWA - Doesn't work on in docker, it works fine with python mangage.py runserver locally outside of docker though.
+* PWA - Doesn't work when dockerized, it works fine with `python mangage.py runserver` locally outside of docker though.
 
 
 
